@@ -58,7 +58,12 @@ export default function Contact() {
           style={{ fontFamily: "var(--mono)" }}
         >
           <span>© {new Date().getFullYear()} {profile.name}</span>
-          <span>{profile.location}</span>
+          <div className="flex items-center gap-4">
+            <span>{profile.location}</span>
+            <a href="/admin" className="hover:text-[var(--text)] transition-colors">
+              admin
+            </a>
+          </div>
         </div>
       </div>
     </footer>
