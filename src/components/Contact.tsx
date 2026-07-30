@@ -8,6 +8,15 @@ export default function Contact() {
     { label: "Email", href: `mailto:${profile.email}`, value: profile.email },
     { label: "GitHub", href: profile.github, value: profile.github.replace("https://", "") },
     { label: "LinkedIn", href: profile.linkedin, value: profile.linkedin.replace("https://", "") },
+    ...(profile.whatsapp
+      ? [
+          {
+            label: "WhatsApp",
+            href: `https://wa.me/${profile.whatsapp.replace(/[^\d]/g, "")}`,
+            value: `+${profile.whatsapp.replace(/[^\d]/g, "")}`,
+          },
+        ]
+      : []),
   ];
   return (
     <footer id="contact" className="py-20 sm:py-28">

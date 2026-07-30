@@ -1,4 +1,5 @@
 import { useSiteContent } from "../lib/SiteContentContext";
+import { getSkillIcon } from "../data/skillIcons";
 
 export default function Toolchain() {
   const { content } = useSiteContent();
@@ -6,33 +7,36 @@ export default function Toolchain() {
   return (
     <section id="skills" className="border-b border-[var(--border)] py-20 sm:py-28">
       <div className="mx-auto max-w-4xl px-6">
-        <SectionEyebrow label="toolchain.json" />
+        <SectionEyebrow label="toolchain" />
         <h2 className="text-2xl sm:text-3xl font-semibold text-white mb-10">
           What I build with
         </h2>
 
-        <div
-          className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6 sm:p-8 text-sm sm:text-[15px] overflow-x-auto"
-          style={{ fontFamily: "var(--mono)" }}
-        >
-          <div className="text-[var(--muted)]">{"{"}</div>
-          {skills.map((group, i) => (
-            <div key={group.category} className="pl-4 sm:pl-6 py-1.5">
-              <span className="text-[var(--accent2)]">"{group.category}"</span>
-              <span className="text-[var(--muted)]">: [</span>
-              <div className="pl-4 sm:pl-6 flex flex-wrap gap-x-2">
-                {group.items.map((item, idx) => (
-                  <span key={item} className="text-[var(--accent)]">
-                    "{item}"{idx < group.items.length - 1 ? "," : ""}
-                  </span>
-                ))}
+        <div className="space-y-8">
+          {skills.map((group) => (
+            <div key={group.category}>
+              <h3
+                className="text-xs uppercase tracking-wide text-[var(--muted)] mb-3"
+                style={{ fontFamily: "var(--mono)" }}
+              >
+                {group.category.replace(/_/g, " ")}
+              </h3>
+              <div className="flex flex-wrap gap-2.5">
+                {group.items.map((item) => {
+                  const Icon = getSkillIcon(item);
+                  return (
+                    <span
+                      key={item}
+                      className="inline-flex items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text)] hover:border-[var(--accent2)]/50 transition-colors"
+                    >
+                      <Icon size={16} className="text-[var(--accent)] shrink-0" />
+                      {item}
+                    </span>
+                  );
+                })}
               </div>
-              <span className="text-[var(--muted)]">
-                ]{i < skills.length - 1 ? "," : ""}
-              </span>
             </div>
           ))}
-          <div className="text-[var(--muted)]">{"}"}</div>
         </div>
       </div>
     </section>

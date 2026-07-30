@@ -12,6 +12,7 @@ export type Profile = {
   email: string;
   github: string;
   linkedin: string;
+  whatsapp: string; // digits only, e.g. "2348012345678" — used in wa.me link
   calUsername: string;
 };
 
@@ -28,6 +29,7 @@ export type Project = {
   href?: string;
   repo?: string;
   private?: boolean;
+  imageUrl?: string;
 };
 
 export type SiteContent = {
@@ -47,6 +49,7 @@ export const defaultContent: SiteContent = {
     email: "contacttechkorede@gmail.com",
     github: "https://github.com/Korede-sys",
     linkedin: "https://www.linkedin.com/in/korede-jamiu-294293239",
+    whatsapp: "2348146660231",
     calUsername: "your-cal-username",
   },
   skills: [

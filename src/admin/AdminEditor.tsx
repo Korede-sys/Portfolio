@@ -58,6 +58,32 @@ export default function AdminEditor({ onLogout }: { onLogout: () => void }) {
     setDraft((d) => ({ ...d, skills: d.skills.filter((_, i) => i !== index) }));
   }
 
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  async function handleImageUpload(index: number, file: File) {
+    if (!supabase) return;
+    setUploadingIndex(index);
+    setUploadError(null);
+
+    const ext = file.name.split(".").pop() || "jpg";
+    const path = `project-${index}-${Date.now()}.${ext}`;
+
+    const { error: uploadErr } = await supabase.storage
+      .from("project-images")
+      .upload(path, file, { upsert: true });
+
+    if (uploadErr) {
+      setUploadError(uploadErr.message);
+      setUploadingIndex(null);
+      return;
+    }
+
+    const { data } = supabase.storage.from("project-images").getPublicUrl(path);
+    updateProject(index, "imageUrl", data.publicUrl);
+    setUploadingIndex(null);
+  }
+
   function updateProject(index: number, field: keyof Project, value: string | boolean) {
     setDraft((d) => {
       const projects = [...d.projects];
@@ -148,6 +174,11 @@ export default function AdminEditor({ onLogout }: { onLogout: () => void }) {
               onChange={(v) => updateProfile("linkedin", v)}
             />
             <Field
+              label="WhatsApp number (digits only, with country code, e.g. 2348012345678)"
+              value={draft.profile.whatsapp}
+              onChange={(v) => updateProfile("whatsapp", v)}
+            />
+            <Field
               label="Cal.com username"
               value={draft.profile.calUsername}
               onChange={(v) => updateProfile("calUsername", v)}
@@ -234,6 +265,37 @@ export default function AdminEditor({ onLogout }: { onLogout: () => void }) {
                   className="w-full rounded-md bg-[var(--surface-2)] border border-[var(--border)] px-3 py-2 text-sm outline-none focus:border-[var(--accent2)]"
                   placeholder="Description"
                 />
+
+                <div className="flex items-center gap-3">
+                  {project.imageUrl && (
+                    <img
+                      src={project.imageUrl}
+                      alt=""
+                      className="w-24 h-16 object-cover rounded border border-[var(--border)]"
+                    />
+                  )}
+                  <label className="text-sm text-[var(--accent2)] hover:underline cursor-pointer">
+                    {uploadingIndex === i
+                      ? "Uploading…"
+                      : project.imageUrl
+                      ? "Replace screenshot"
+                      : "Upload screenshot"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      disabled={uploadingIndex !== null}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleImageUpload(i, file);
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                </div>
+                {uploadError && uploadingIndex === null && (
+                  <p className="text-sm text-red-400">{uploadError}</p>
+                )}
 
                 <input
                   value={project.stack.join(", ")}
