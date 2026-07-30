@@ -13,12 +13,15 @@ export default function Nav() {
   return (
     <header className="sticky top-0 z-50 backdrop-blur-md bg-[var(--bg)]/75 border-b border-[var(--border)]">
       <nav className="mx-auto max-w-4xl px-6 h-14 flex items-center justify-between">
-        <a
-          href="#"
-          className="text-sm font-semibold text-white"
-          style={{ fontFamily: "var(--mono)" }}
-        >
-          {profile.name.toLowerCase()}<span className="text-[var(--accent)]">.</span>
+        <a href="#" className="flex items-center gap-2.5">
+          <img src="/favicon-48.png" alt="Kotech Solutions" className="w-7 h-7 rounded-full" />
+          <span
+            className="text-sm font-semibold text-white"
+            style={{ fontFamily: "var(--mono)" }}
+          >
+            {profile.name.toLowerCase()}
+            <span className="text-[var(--accent)]">.</span>
+          </span>
         </a>
         <ul className="flex items-center gap-5 sm:gap-7">
           {NAV_ITEMS.map((item) => (
