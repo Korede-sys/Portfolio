@@ -1,5 +1,48 @@
 import { useSiteContent } from "../lib/SiteContentContext";
 import { SectionEyebrow } from "./Toolchain";
+import { getSkillIcon } from "../data/skillIcons";
+
+function hashHue(name: string) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return Math.abs(hash) % 360;
+}
+
+function ProjectCover({ name, stack }: { name: string; stack: string[] }) {
+  const hue = hashHue(name);
+  const initials = name
+    .split(" ")
+    .filter((w) => w.length > 0)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase();
+
+  return (
+    <div
+      className="w-full h-56 border-b border-[var(--border)] relative overflow-hidden flex flex-col items-center justify-center gap-4"
+      style={{
+        background: `linear-gradient(135deg, hsl(${hue} 45% 12%), hsl(${(hue + 40) % 360} 40% 8%))`,
+      }}
+    >
+      <div className="absolute inset-0 bg-grid opacity-40" />
+      <span
+        className="relative text-5xl font-bold tracking-widest opacity-90"
+        style={{ fontFamily: "var(--mono)", color: `hsl(${hue} 70% 65%)` }}
+      >
+        {initials}
+      </span>
+      <div className="relative flex items-center gap-3">
+        {stack.slice(0, 4).map((tech) => {
+          const Icon = getSkillIcon(tech);
+          return <Icon key={tech} size={18} className="text-[var(--muted)]" />;
+        })}
+      </div>
+    </div>
+  );
+}
 
 export default function Deployments() {
   const { content } = useSiteContent();
@@ -26,12 +69,7 @@ export default function Deployments() {
                   loading="lazy"
                 />
               ) : (
-                <div
-                  className="w-full h-40 border-b border-[var(--border)] bg-[var(--surface-2)] flex items-center justify-center text-xs text-[var(--muted)]"
-                  style={{ fontFamily: "var(--mono)" }}
-                >
-                  no screenshot yet — add one in /admin
-                </div>
+                <ProjectCover name={project.name} stack={project.stack} />
               )}
 
               <div className="p-5 sm:p-6">
