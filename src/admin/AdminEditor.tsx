@@ -13,13 +13,16 @@ export default function AdminEditor({ onLogout }: { onLogout: () => void }) {
     if (!supabase) return;
     setSaving(true);
     setStatus(null);
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("site_content")
       .update({ data: draft, updated_at: new Date().toISOString() })
-      .eq("id", 1);
+      .eq("id", 1)
+      .select();
     setSaving(false);
     if (error) {
       setStatus(`Error: ${error.message}`);
+    } else if (!data || data.length === 0) {
+      setStatus("Warning: no row was updated — changes may not have saved.");
     } else {
       setStatus("Saved ✓");
       await refresh();

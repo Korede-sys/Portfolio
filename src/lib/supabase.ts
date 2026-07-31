@@ -10,4 +10,12 @@ if (!url || !anonKey) {
   );
 }
 
-export const supabase = url && anonKey ? createClient(url, anonKey) : null;
+// Force every request to bypass HTTP caching. Without this, browsers can
+// serve a stale cached response for the site_content GET request even
+// after an admin edit has actually saved — the fix isn't optional.
+const noCacheFetch: typeof fetch = (input, init) =>
+  fetch(input, { ...init, cache: "no-store" });
+
+export const supabase = url && anonKey
+  ? createClient(url, anonKey, { global: { fetch: noCacheFetch } })
+  : null;
