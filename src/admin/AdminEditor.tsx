@@ -1,16 +1,43 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useSiteContent } from "../lib/SiteContentContext";
 import type { Profile, Skill, Project, SiteContent } from "../data/content";
 
 export default function AdminEditor({ onLogout }: { onLogout: () => void }) {
-  const { content, refresh } = useSiteContent();
-  const [draft, setDraft] = useState<SiteContent>(content);
+  const { content, loading, refresh } = useSiteContent();
+  const [draft, setDraft] = useState<SiteContent | null>(null);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  // Only seed the draft once the real, live content has finished loading —
+  // never from the fallback defaults, and only once (so we don't clobber
+  // in-progress edits if content re-fetches in the background).
+  useEffect(() => {
+    if (!loading && draft === null) {
+      setDraft(content);
+    }
+  }, [loading, content, draft]);
+
+  // Small helper so every mutation is guaranteed to operate on a real,
+  // already-loaded draft — never silently on null.
+  function updateDraft(fn: (d: SiteContent) => SiteContent) {
+    setDraft((d) => (d ? fn(d) : d));
+  }
+
+  if (loading || draft === null) {
+    return (
+      <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex items-center justify-center">
+        <p className="text-[var(--muted)]" style={{ fontFamily: "var(--mono)" }}>
+          loading live content…
+        </p>
+      </div>
+    );
+  }
 
   async function handleSave() {
-    if (!supabase) return;
+    if (!supabase || !draft) return;
     setSaving(true);
     setStatus(null);
     const { data, error } = await supabase
@@ -31,11 +58,11 @@ export default function AdminEditor({ onLogout }: { onLogout: () => void }) {
   }
 
   function updateProfile(field: keyof Profile, value: string) {
-    setDraft((d) => ({ ...d, profile: { ...d.profile, [field]: value } }));
+    updateDraft((d) => ({ ...d, profile: { ...d.profile, [field]: value } }));
   }
 
   function updateSkillCategory(index: number, category: string) {
-    setDraft((d) => {
+    updateDraft((d) => {
       const skills = [...d.skills];
       skills[index] = { ...skills[index], category };
       return { ...d, skills };
@@ -43,7 +70,7 @@ export default function AdminEditor({ onLogout }: { onLogout: () => void }) {
   }
 
   function updateSkillItems(index: number, itemsText: string) {
-    setDraft((d) => {
+    updateDraft((d) => {
       const skills = [...d.skills];
       skills[index] = {
         ...skills[index],
@@ -54,15 +81,12 @@ export default function AdminEditor({ onLogout }: { onLogout: () => void }) {
   }
 
   function addSkillGroup() {
-    setDraft((d) => ({ ...d, skills: [...d.skills, { category: "new", items: [] }] }));
+    updateDraft((d) => ({ ...d, skills: [...d.skills, { category: "new", items: [] }] }));
   }
 
   function removeSkillGroup(index: number) {
-    setDraft((d) => ({ ...d, skills: d.skills.filter((_, i) => i !== index) }));
+    updateDraft((d) => ({ ...d, skills: d.skills.filter((_, i) => i !== index) }));
   }
-
-  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
-  const [uploadError, setUploadError] = useState<string | null>(null);
 
   async function handleImageUpload(index: number, file: File) {
     if (!supabase) return;
@@ -88,7 +112,7 @@ export default function AdminEditor({ onLogout }: { onLogout: () => void }) {
   }
 
   function updateProject(index: number, field: keyof Project, value: string | boolean) {
-    setDraft((d) => {
+    updateDraft((d) => {
       const projects = [...d.projects];
       projects[index] = { ...projects[index], [field]: value } as Project;
       return { ...d, projects };
@@ -96,7 +120,7 @@ export default function AdminEditor({ onLogout }: { onLogout: () => void }) {
   }
 
   function updateProjectStack(index: number, stackText: string) {
-    setDraft((d) => {
+    updateDraft((d) => {
       const projects = [...d.projects];
       projects[index] = {
         ...projects[index],
@@ -107,7 +131,7 @@ export default function AdminEditor({ onLogout }: { onLogout: () => void }) {
   }
 
   function addProject() {
-    setDraft((d) => ({
+    updateDraft((d) => ({
       ...d,
       projects: [
         ...d.projects,
@@ -117,7 +141,7 @@ export default function AdminEditor({ onLogout }: { onLogout: () => void }) {
   }
 
   function removeProject(index: number) {
-    setDraft((d) => ({ ...d, projects: d.projects.filter((_, i) => i !== index) }));
+    updateDraft((d) => ({ ...d, projects: d.projects.filter((_, i) => i !== index) }));
   }
 
   return (
